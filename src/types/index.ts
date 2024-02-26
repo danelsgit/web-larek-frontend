@@ -1,95 +1,91 @@
 
-interface ILotItem {
+interface ILotItem { // заполнение данными карточки c api
 	id: string;
-	price?: string;
+	price?: number | null;
 	title: string;
 	about: string;
 	image: string;
 	descriptionText?: string;
 }
 
-interface IAppState {
-	lots: ILotItem[];
-	preview: string | null;
-	order: IOrder | null;
-	cartItems: string[];
-	currentPage: number;
+interface IAppState { // класс appData, который хранит данные
+	preview: string | null; // отображение карточки 
+	order: IOrder | null; // карточки в заказе
+	cartItems: string[]; // карточки в корзине
+	catalog: ILotItem[];  // карточки отображаемые для выбора
+  
 }
 
-interface IContactForm {
+interface IContactForm { // форма с контактами
 	phone: string;
 	email: string;
 }
 
-interface IDeliveryForm {
+interface IDeliveryForm { // форма с адрессом и оплатой
 	payment: string;
 	address: string;
 }
 
-interface IOrder extends IDeliveryForm {
+interface IOrder extends IDeliveryForm {  // инфо о заказе для сервера
 	total: number;
 	items: string;
-	orderDate: string;
 	customerInfo: IContactForm;
 }
 
 type OrderErrors = Record<keyof IOrder, string>;
 
-interface IOrderResult {
+interface IOrderResult { // ид товара для добавления в заказ
 	id: string;
 }
 
-interface IProductList {
-	itemCount: number;
-	locked: boolean;
-	catalog: HTMLElement[];
-	itemsPerPage: number;
+interface IProductList { // страница с товаром
+	itemCount: number; // счетчик товара
+	locked: boolean; // доступ к странице
+	catalog: HTMLElement[]; // каталог товара
 }
 
-interface IBasketView {
-	button: string;
-	basketItems: HTMLElement[];
-	total: number;
+interface IBasketView { // корзина
+	items: HTMLElement[]; // список элементов в корзине
+    total: number;  // сумма товаров в корзине
+    button: string[]; // кнопка для оформления заказа
 }
 
-interface IFormState {
-	valid: boolean;
-	errors: OrderErrors;
+interface IFormState { // для класса form
+	valid: boolean; 
+	errors: OrderErrors; 
 }
 
-interface IModalContent {
-	modalContent: HTMLElement;
+interface IModalContent { // для класса modal
+	content: HTMLElement; // поле с контентом, которое будет отображаться или очищаться
 }
 
-interface ISuccessMessage {
-	totalText: string;
-	orderNumber: string;
+interface ISuccessMessage { // для класса success
+	totalText: string; // поле для текста в случае успешной оплаты с кол-во списанных средств
 }
 
-interface ISuccessActions {
+interface ISuccessActions { // для класса success
 	onClick: () => void;
 }
 
 interface IAuctionAPI {
-	getLots(): Promise<ILotItem[]>;
-	addToCart(lotId: string): Promise<void>;
-	orderLots(order: IOrder): Promise<IOrderResult>;
-	getLotItem(id: string): Promise<ILotItem>;
+	getLotList: () => Promise<ILotItem[]>;  // список товаров
+    getLotItem: (id: string) => Promise<ILotItem>;  // информация о товаре
+    orderLots: (order: IOrder) => Promise<IOrderResult>;  // заказ товаров
 }
 
-interface ICardActions {
-	onClick: (event: MouseEvent) => void;
-}
-
-interface ICard<T> {
+interface ICard<T> { // для класса auctionApi
 	title: string;
-	description?: string | string[];
+	description?: string;
 	image?: string;
 	category?: string;
-	price?: string;
-	button?: boolean;
-	status: T;
+	price?: number | null;
+	button?: HTMLElement[];
+	status: T; // есть ли в корзине
 	index: number;
+}
+
+interface ICardActions { // для класса auctionApi
+	onClick: (event: MouseEvent) => void;
 }
 
 export {
