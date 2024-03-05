@@ -1,19 +1,17 @@
 
 interface ILotItem { // заполнение данными карточки c api
 	id: string;
-	price?: number | null;
 	title: string;
 	about: string;
 	image: string;
-	descriptionText?: string;
+	description?: string;
 }
 
 interface IAppState { // класс appData, который хранит данные
 	preview: string | null; // отображение карточки 
 	order: IOrder | null; // карточки в заказе
-	cartItems: string[]; // карточки в корзине
+	basket: string[]; // карточки в корзине
 	catalog: ILotItem[];  // карточки отображаемые для выбора
-  
 }
 
 interface IContactForm { // форма с контактами
@@ -21,18 +19,17 @@ interface IContactForm { // форма с контактами
 	email: string;
 }
 
-interface IDeliveryForm { // форма с адрессом и оплатой
+interface IDeliveryForm extends IContactForm { // форма с адрессом и оплатой
 	payment: string;
 	address: string;
 }
 
 interface IOrder extends IDeliveryForm {  // инфо о заказе для сервера
 	total: number;
-	items: string;
-	customerInfo: IContactForm;
+	items: string[];
 }
 
-type OrderErrors = Record<keyof IOrder, string>;
+type OrderErrors = Partial<Record<keyof IOrder, string>>;
 
 interface IOrderResult { // ид товара для добавления в заказ
 	id: string;
@@ -52,7 +49,7 @@ interface IBasketView { // корзина
 
 interface IFormState { // для класса form
 	valid: boolean; 
-	errors: OrderErrors; 
+	errors: string[]; 
 }
 
 interface IModalContent { // для класса modal
@@ -75,17 +72,27 @@ interface IAuctionAPI {
 
 interface ICard<T> { // для класса auctionApi
 	title: string;
-	description?: string;
+	description?: string | string[];
 	image?: string;
 	category?: string;
-	price?: number | null;
-	button?: HTMLElement[];
+	price?: string;
+	button?: boolean;
 	status: T; // есть ли в корзине
 	index: number;
 }
 
 interface ICardActions { // для класса auctionApi
 	onClick: (event: MouseEvent) => void;
+}
+
+interface IProductPreview<T> {
+    description: string | string[];
+    image: string;
+    category: string;
+}
+
+interface IProductBasket<T> {
+    index: number;
 }
 
 export {
@@ -104,4 +111,7 @@ export {
 	IProductList,
 	ISuccessActions,
 	ISuccessMessage,
+	OrderErrors,
+	IProductPreview,    
+	IProductBasket
 };
