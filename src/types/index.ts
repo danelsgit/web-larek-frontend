@@ -5,12 +5,13 @@ interface ILotItem { // заполнение данными карточки c a
 	about: string;
 	image: string;
 	description?: string;
+	price: number | null;
 }
 
 interface IAppState { // класс appData, который хранит данные
-	preview: string | null; // отображение карточки 
-	order: IOrder | null; // карточки в заказе
-	basket: string[]; // карточки в корзине
+	preview: ILotItem; // отображение карточки 
+	order: IOrder; // карточки в заказе
+	basket: ILotItem[]; // карточки в корзине
 	catalog: ILotItem[];  // карточки отображаемые для выбора
 }
 
@@ -31,8 +32,9 @@ interface IOrder extends IDeliveryForm {  // инфо о заказе для с�
 
 type OrderErrors = Partial<Record<keyof IOrder, string>>;
 
-interface IOrderResult { // ид товара для добавления в заказ
+interface IOrderResult { // для добавления в заказ
 	id: string;
+	total: number;
 }
 
 interface IProductList { // страница с товаром

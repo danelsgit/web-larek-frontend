@@ -2,7 +2,7 @@ import { IOrder, IOrderResult, ILotItem, IAuctionAPI } from '../types/index';
 import { Api, ApiListResponse } from './base/api';
 
 export class AuctionAPI extends Api implements IAuctionAPI {
-	readonly net: string;
+	private readonly net: string;
 
 	constructor(net: string, baseUrl: string, options?: RequestInit) {
 		super(baseUrl, options);

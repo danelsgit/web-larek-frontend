@@ -19,11 +19,11 @@ abstract class Component<T> {
 		}
 	}
 
-	protected setImg(element: HTMLImageElement, src: string, alt?: string) {
-		if (element) {
-			element.src = src;
+	protected setImg(img: HTMLImageElement, src: string, alt?: string) {
+		if (img) {
+			img.src = src;
 			if (alt) {
-				element.alt = alt;
+				img.alt = alt;
 			}
 		}
 	}

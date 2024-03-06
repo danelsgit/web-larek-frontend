@@ -1,6 +1,24 @@
 import { Form } from './common';
 import { IDeliveryForm, IContactForm } from '../types';
 import { IEvents } from './base/events';
+import { ensureElement } from '../utils/utils';
+
+class OrderContacts extends Form<IContactForm> {
+	protected afterInput(field: keyof IContactForm, value: string) {
+		this.events.emit('orderContacts:change', {
+			field,
+			value,
+		});
+	}
+	constructor(container: HTMLFormElement, events: IEvents) {
+		super(container, events);
+
+		this.container.addEventListener('submit', (evt: Event) => {
+			evt.preventDefault();
+			this.events.emit(`orderContacts:submit`);
+		});
+	}
+}
 
 class OrderDelivery<T> extends Form<IDeliveryForm> {
 	protected _paymentOnline: HTMLElement;
@@ -14,8 +32,8 @@ class OrderDelivery<T> extends Form<IDeliveryForm> {
 	}
 	constructor(container: HTMLFormElement, events: IEvents) {
 		super(container, events);
-		this._paymentOnline = this.container.querySelector('.online');
-		this._paymentOffline = this.container.querySelector('.offline');
+		this._paymentOnline = this.container.querySelector('#online');
+		this._paymentOffline = this.container.querySelector('#offline');
 
 		this._paymentOnline.addEventListener('click', (e: Event) => {
 			e.preventDefault();
@@ -38,21 +56,6 @@ class OrderDelivery<T> extends Form<IDeliveryForm> {
 	}
 }
 
-class OrderContacts extends Form<IContactForm> {
-	protected afterInput(field: keyof IContactForm, value: string) {
-		this.events.emit('orderContacts:change', {
-			field,
-			value,
-		});
-	}
-	constructor(container: HTMLFormElement, events: IEvents) {
-		super(container, events);
 
-		this.container.addEventListener('submit', (e: Event) => {
-			e.preventDefault();
-			this.events.emit(`orderContacts:submit`);
-		});
-	}
-}
 
 export { OrderContacts, OrderDelivery };

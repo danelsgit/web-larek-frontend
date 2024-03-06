@@ -64,15 +64,15 @@ class Form<T> extends Component<IFormState> {
 	constructor(protected container: HTMLFormElement, protected events: IEvents) {
 		super(container);
 
-		this.container.addEventListener('input', (e: Event) => {
-			const target = e.target as HTMLInputElement;
+		this.container.addEventListener('input', (evt: Event) => {
+			const target = evt.target as HTMLInputElement;
 			const field = target.name as keyof T;
 			const value = target.value;
 			this.afterInput(field, value);
 		});
 
-		this.container.addEventListener('submit', (e: Event) => {
-			e.preventDefault();
+		this.container.addEventListener('submit', (evt: Event) => {
+			evt.preventDefault();
 			events.emit(`${this.container.name}:submit`);
 		});
 

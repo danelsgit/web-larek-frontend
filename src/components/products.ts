@@ -38,23 +38,12 @@ class ProductCard<T> extends Component<ICard<T>> {
         this.setText(this._title, value);
     }
 
-    get title(): string {
-        return this._title.textContent || '';
-    }
-
     set id(value: string) {
         this.container.dataset.id = value;
-    }
+    }  
 
-    get id(): string {
-        return this.container.dataset.id || '';
-    }
     set price(value: string) {
         this.setText(this._price, value);
-    }
-
-    get price(): string {
-        return this._price.textContent || '';
     }
 
     set buttonEnabled(value: boolean) {
@@ -71,6 +60,17 @@ class ProductCard<T> extends Component<ICard<T>> {
         this._status = value;
     }
 
+    get title(): string {
+        return this._title.textContent || '';
+    }
+
+    get id(): string {
+        return this.container.dataset.id || '';
+    }
+  
+    get price(): string {
+        return this._price.textContent || '';
+    }
 }
 
 class ProductPreviewCard<T> extends ProductCard<IProductPreview<T>> {
