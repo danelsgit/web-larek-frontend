@@ -1,7 +1,6 @@
 import { Form } from './common';
 import { IDeliveryForm, IContactForm } from '../types';
 import { IEvents } from './base/events';
-import { ensureElement } from '../utils/utils';
 
 class OrderContacts extends Form<IContactForm> {
 	protected afterInput(field: keyof IContactForm, value: string) {

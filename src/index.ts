@@ -21,7 +21,6 @@ const basketTemplate = ensureElement<HTMLTemplateElement>('#basket');
 const cardBasketTemplate = ensureElement<HTMLTemplateElement>('#card-basket');
 const orderContactsTemplate = ensureElement<HTMLTemplateElement>('#contacts');
 
-
 const events = new EventEmitter();
 const api = new AuctionAPI(CDN_URL, API_URL);
 const appData = new AppState({}, events);
@@ -32,12 +31,16 @@ const orderContactsForm = new OrderContacts(
 	cloneTemplate(orderContactsTemplate),
 	events
 );
+
 const orderDeliveryForm = new OrderDelivery(
 	cloneTemplate(orderDeliveryTemplate),
 	events
 );
 
-events.on('items:changed', () => {
+type CatalogChanged = {
+	catalog: LotItem[];
+};
+events.on<CatalogChanged>('items:changed', () => {
 	page.catalog = appData.catalog.map((item) => {
 		const card = new ProductPreviewCard(
 			'card',
@@ -59,21 +62,17 @@ events.on('card:select', (item: LotItem) => {
 	appData.setPreview(item);
 });
 
-events.on(
-	'orderDelivery:change',
-	(data: { field: keyof IDeliveryForm; value: string }) => {
-		appData.setOrder(data.field, data.value);
-		orderDeliveryForm.valid = appData.validateOrderDelivery();
-	}
-);
+events.on('card: add', (item: LotItem) => {
+	appData.addOrder(item.id);
+	item.status = true;
+	events.emit('basket: render');
+});
 
-events.on(
-	'orderContacts:change',
-	(data: { field: keyof IContactForm; value: string }) => {
-		appData.setOrder(data.field, data.value);
-		orderContactsForm.valid = appData.validateOrderContacts();
-	}
-);
+events.on('card: delete', (item: LotItem) => {
+	appData.deleteItem(item.id);
+	item.status = false;
+	events.emit('basket: render');
+});
 
 events.on('orderContacts:open', () => {
 	modal.render({
@@ -86,36 +85,38 @@ events.on('orderContacts:open', () => {
 	});
 });
 
-events.on('orderDelivery:open', () => {
-	modal.render({
-		content: orderDeliveryForm.render({
-			payment: 'offline',
-			address: '',
-			valid: false,
-			errors: [],
-		}),
-	});
+events.on('orderContactsForm:change', (errors: Partial<IContactForm>) => {
+	const { email, phone } = errors;
+	orderContactsForm.valid = !email && !phone;
+	orderContactsForm.errors = Object.values({ phone, email })
+		.filter((err) => !!err)
+		.join(';');
 });
-events.on('orderDelivery:submit', () => {
-	events.emit('orderContacts:open');
-});
+
+events.on(
+	'orderContacts:change',
+	(data: { field: keyof IContactForm; value: string }) => {
+		appData.setOrder(data.field, data.value);
+		orderContactsForm.valid = appData.validateOrderContacts();
+	}
+);
 
 events.on('orderContacts:submit', () => {
 	appData.order.total = appData.getTotal();
 	api
 		.orderLots(appData.order)
-		.then((result) => {
+		.then(() => {
 			const success = new Success(cloneTemplate(successTemplate), {
 				onClick: () => {
-					modal.close();
 					appData.clearOrder();
-					events.emit('basket: rerender');
+					modal.close();
+					events.emit('basket: secondRender');
 				},
 			});
 
 			modal.render({
 				content: success.render({
-					totalText: appData.getTotal().toString(),
+					description: appData.getTotal().toString(),
 				}),
 			});
 		})
@@ -124,21 +125,45 @@ events.on('orderContacts:submit', () => {
 		});
 });
 
-
-events.on('orderContactsForm:change', (errors: Partial<IContactForm>) => {
-	const { email, phone } = errors;
-	orderContactsForm.valid = !email && !phone;
-	orderContactsForm.errors = Object.values({ phone, email })
-		.filter((i) => !!i)
-		.join('; ');
+events.on('orderDelivery:open', () => {
+	modal.render({
+		content: orderDeliveryForm.render({
+			payment: '',
+			address: '',
+			valid: false,
+			errors: [],
+		}),
+	});
 });
 
 events.on('orderDeliveryForm:change', (errors: Partial<IDeliveryForm>) => {
 	const { payment, address } = errors;
 	orderDeliveryForm.valid = !payment && !address;
 	orderDeliveryForm.errors = Object.values({ payment, address })
-		.filter((i) => !!i)
-		.join('; ');
+		.filter((err) => !!err)
+		.join(';');
+});
+
+events.on(
+	'orderDelivery:change',
+	(data: { field: keyof IDeliveryForm; value: string }) => {
+		appData.setOrder(data.field, data.value);
+		orderDeliveryForm.valid = appData.validateOrderDelivery();
+	}
+);
+
+events.on('orderDelivery:submit', () => {
+	events.emit('orderContacts:open');
+});
+
+events.on('basket:open', () => {
+	modal.render({
+		content: createElement<HTMLElement>('div', {}, [
+			basket.render({
+				button: appData.order.items,
+			}),
+		]),
+	});
 });
 
 events.on('basket: render', () => {
@@ -149,43 +174,31 @@ events.on('basket: render', () => {
 			cloneTemplate(cardBasketTemplate),
 			{
 				onClick: () => {
-					events.emit('card: deletedFromBasket', item);
+					events.emit('card: delete', item);
 				},
 			}
 		);
 		return card.render({
-			title: item.title,
 			price: item.price !== null ? item.price + ' синапсов' : 'Бесценно',
 			index: index + 1,
+			title: item.title,
 		});
 	});
 	basket.button = appData.order.items;
 	basket.total = appData.getTotal();
 });
 
-events.on('card:addedToBasket', (item: LotItem) => {
-	item.status = true;
-	appData.addOrder(item.id);
-	events.emit('basket: render');
-	basket.total = appData.getTotal();
-});
-
-events.on('card:deletedFromBasket', (item: LotItem) => {
-	item.status = false;
-	appData.clearOrder(item.id);
-	events.emit('basket: render');
-});
-events.on('basket:rerender', () => {
-	appData.getActiveLots().map((item) => {
+events.on('basket: secondRender', () => {
+	appData.getActiveLots().map((item, index) => {
 		item.status = false;
-		basket.items = appData.getActiveLots().map(() => {
+		basket.items = appData.getActiveLots().map((item, index) => {
 			const card = new ProductBasketCard(
 				'card',
 				cloneTemplate(cardBasketTemplate)
 			);
 			return card.render({
 				title: '',
-				price: '',
+				price: null,
 				index: 0,
 			});
 		});
@@ -201,23 +214,24 @@ events.on('preview:changed', (item: LotItem) => {
 			cloneTemplate(cardPreviewTemplate),
 			{
 				onClick: () => {
+					modal.close();
 					if (!item.status) {
-						events.emit('card:addedToBasket', item);
-					} else {
-						events.emit('card:deletedFromBasket', item);
+						events.emit('card: add', item);
 					}
+					modal.close();
 					events.emit('preview:changed', item);
 				},
 			}
 		);
+
 		modal.render({
 			content: card.render({
 				category: item.category,
 				title: item.title,
-				image: item.image,
 				price: item.price !== null ? item.price + ' синапсов' : 'Бесценно',
 				description: item.description,
 				button: item.status,
+				image: item.image,
 			}),
 		});
 	};
@@ -240,21 +254,9 @@ events.on('preview:changed', (item: LotItem) => {
 events.on('modal:open', () => {
 	page.locked = true;
 });
-
 events.on('modal:close', () => {
 	page.locked = false;
 });
-
-events.on('basket:open', () => {
-	modal.render({
-		content: createElement<HTMLElement>('div', {}, [
-			basket.render({
-				button: appData.order.items,
-			}),
-		]),
-	});
-});
-
 
 let products = api
 	.getLotList()
@@ -262,5 +264,3 @@ let products = api
 	.catch((err) => {
 		console.error(err);
 	});
-
-    products

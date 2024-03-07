@@ -47,6 +47,7 @@ interface IBasketView { // корзина
 	items: HTMLElement[]; // список элементов в корзине
     total: number;  // сумма товаров в корзине
     button: string[]; // кнопка для оформления заказа
+	
 }
 
 interface IFormState { // для класса form
@@ -55,11 +56,11 @@ interface IFormState { // для класса form
 }
 
 interface IModalContent { // для класса modal
-	content: HTMLElement; // поле с контентом, которое будет отображаться или очищаться
+	content: HTMLElement ; // поле с контентом, которое будет отображаться или очищаться
 }
 
 interface ISuccessMessage { // для класса success
-	totalText: string; // поле для текста в случае успешной оплаты с кол-во списанных средств
+	description: string; // поле для текста в случае успешной оплаты с кол-во списанных средств
 }
 
 interface ISuccessActions { // для класса success
@@ -95,6 +96,7 @@ interface IProductPreview<T> {
 
 interface IProductBasket<T> {
     index: number;
+	delete: () => void;
 }
 
 export {

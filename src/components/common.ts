@@ -1,5 +1,5 @@
 import { Component } from './base/component';
-import { ensureElement } from '../utils/utils';
+import { createElement, ensureElement } from '../utils/utils';
 import { EventEmitter, IEvents } from './base/events';
 import {
 	IBasketView,
@@ -26,28 +26,40 @@ class Basket extends Component<IBasketView> {
 
 		if (this._basketButton) {
 			this._basketButton.addEventListener('click', () =>
-				events.emit('orderAddress:open')
+				events.emit('orderDelivery:open')
 			);
 		}
 
+		
 		this.items = [];
-	}
-
-	set items(items: HTMLElement[]) {
-		this._list.replaceChildren(...items);
+		
 	}
 
 	set button(items: string[]) {
-        if (items.length) {
-            this.setLock(this._basketButton, false);
-        } else {
-            this.setLock(this._basketButton, true);
-        }
-    }
+		if (items.length) {
+			this.setLock(this._basketButton, false);
+		} else {
+			this.setLock(this._basketButton, true);
+		}
+	}
+
+	set items(items: HTMLElement[]) {
+		if (items.length) {
+			this._list.replaceChildren(...items);
+		} else {
+			this._list.replaceChildren(
+				createElement<HTMLParagraphElement>('p', {
+					textContent: 'Корзина пуста',
+				})
+			);
+		}
+	}
 
 	set total(total: number) {
 		this.setText(this._total, filterPrice(total) + ' синапсов');
 	}
+
+
 }
 
 function filterPrice(x: number) {
@@ -81,24 +93,22 @@ class Form<T> extends Component<IFormState> {
 			this.container
 		);
 		this._errors = ensureElement<HTMLElement>('.form__errors', this.container);
-
-		
 	}
 
 	protected afterInput(field: keyof T, value: string) {
-		this.events.emit(
-			`<span class="math-inline">\{this\.container\.name\}\.</span>{String(field)}:change`,
-			{ field, value }
-		);
+		this.events.emit(`${this.container.name}.${String(field)}:change`, {
+            field,
+            value
+        });
+	}
+	set errors(value: string) {
+		this.setText(this._errors, value);
 	}
 
 	set valid(value: boolean) {
 		this._buttonSubmit.disabled = !value;
 	}
 
-	set errors(value: string) {
-		this.setText(this._errors, value);
-	}
 
 	render(state: Partial<T> & IFormState) {
 		const { valid, errors, ...inputs } = state;
@@ -121,6 +131,7 @@ class Modal extends Component<IModalContent> {
 		);
 		this._content = ensureElement<HTMLElement>('.modal__content', container);
 		this.container.addEventListener('click', this.handleClick.bind(this));
+		
 	}
 
 	private handleClick(event: Event) {
@@ -162,14 +173,16 @@ class Success extends Component<ISuccessMessage> {
 
 		this._close = ensureElement<HTMLElement>(
 			'.order-success__close',
-			container
-		);
+			this.container
+		)
+		if (actions.onClick) {
+            this._close.addEventListener('click', actions.onClick);
+        }
+
 		this._description = ensureElement<HTMLElement>(
 			'.order-success__description',
-			container
+			this.container
 		);
-
-		actions?.onClick && this._close.addEventListener('click', actions.onClick);
 	}
 
 	set description(value: string) {

@@ -85,7 +85,7 @@ class ProductPreviewCard<T> extends ProductCard<IProductPreview<T>> {
     ) {
         super(blockName, container, actions);
 
-        this._description = container.querySelector(`.${blockName}__description`);
+        this._description = container.querySelector(`.${blockName}__text`);
         this._category = ensureElement<HTMLElement>(
             `.${blockName}__category`,
             this.container
@@ -103,11 +103,11 @@ class ProductPreviewCard<T> extends ProductCard<IProductPreview<T>> {
             case 'другое':
                 this._category.classList.add('card__category_other');
                 break;
-            case 'дополнительно':
-                this._category.classList.add('card__category_additional');
-                break;
             case 'кнопк':
                 this._category.classList.add('card__category_button');
+                break;
+            case 'дополнительно':
+                this._category.classList.add('card__category_additional');
                 break;
             case 'хард-скилл':
                 this._category.classList.add('card__category_hard');
@@ -115,7 +115,6 @@ class ProductPreviewCard<T> extends ProductCard<IProductPreview<T>> {
             default:
                 this._category.classList.add('card__category_soft');
                 break;
-            
             
         }
     }
@@ -132,9 +131,9 @@ class ProductPreviewCard<T> extends ProductCard<IProductPreview<T>> {
         if (Array.isArray(value)) {
             this._description.replaceWith(
                 ...value.map((str) => {
-                    const descTemplate = this._description.cloneNode() as HTMLElement;
-                    this.setText(descTemplate, str);
-                    return descTemplate;
+                    const descriptionTemplate = this._description.cloneNode() as HTMLElement;
+                    this.setText(descriptionTemplate, str);
+                    return descriptionTemplate;
                 })
             );
         } else {
@@ -145,6 +144,7 @@ class ProductPreviewCard<T> extends ProductCard<IProductPreview<T>> {
 
 class ProductBasketCard<T> extends ProductCard<IProductBasket<T>> {
     protected _index?: HTMLElement;
+    protected _deleteButton: HTMLButtonElement;
 
     constructor(
         blockName: string,
@@ -154,6 +154,10 @@ class ProductBasketCard<T> extends ProductCard<IProductBasket<T>> {
         super(blockName, container, actions);
 
         this._index = this.container.querySelector('.basket__item-index');
+        this._deleteButton = container.querySelector('.card__button');
+		this._deleteButton.addEventListener('click', (event: MouseEvent) => {
+			actions.onClick?.(event);
+		});
     }
 
     set index(value: number) {

@@ -9,13 +9,14 @@ import {
 
 class LotItem extends Model<ILotItem> {
 	about: string;
-    description?: string;
-    id: string;
-    image: string;
-    title: string;
-    price: number;
-    status: boolean;
-    category: string;
+  description?: string;
+  id: string;
+  image: string;
+  title: string;
+  price: number;
+  status: boolean;
+  category: string;
+
 }
 
 class AppState extends Model<IAppState> {
@@ -60,10 +61,6 @@ class AppState extends Model<IAppState> {
     this.order[page] = value;
   }
 
-  addOrder(id: string) {
-    this.order.items.push(id);
-  }
-
   validateOrderDelivery() {
     const errors = {} as OrderErrors;
     if (!this.order.address) {
@@ -96,18 +93,14 @@ class AppState extends Model<IAppState> {
       this.order.items.splice(index, 1);
     }
   }
-  
-  clearOrder(id?: string) {
-    if (id === undefined) {
-      // Очистить все элементы
-      this.order.items.splice(0, this.order.items.length);
-    } else {
-      // Удалить элемент по ID
-      const index = this.order.items.indexOf(id);
-      if (index !== -1) {
-        this.order.items.splice(index, 1);
-      }
-    }
+    addOrder(id: string) {
+    this.order.items.push(id);
+  }
+
+  clearOrder() {
+    this.order.items.forEach(id => {
+      this.deleteItem(id);
+  });
   }
   
 }
