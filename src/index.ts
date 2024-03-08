@@ -77,8 +77,8 @@ events.on('card: delete', (item: LotItem) => {
 events.on('orderContacts:open', () => {
 	modal.render({
 		content: orderContactsForm.render({
-			email: '',
-			phone: '',
+			email: null,
+			phone: null,
 			valid: false,
 			errors: [],
 		}),
@@ -90,7 +90,7 @@ events.on('orderContactsForm:change', (errors: Partial<IContactForm>) => {
 	orderContactsForm.valid = !email && !phone;
 	orderContactsForm.errors = Object.values({ phone, email })
 		.filter((err) => !!err)
-		.join(';');
+		.join('; ');
 });
 
 events.on(
@@ -102,27 +102,32 @@ events.on(
 );
 
 events.on('orderContacts:submit', () => {
-	appData.order.total = appData.getTotal();
+	appData.order.total = appData.getTotalFiltred();
 	api
 		.orderLots(appData.order)
 		.then(() => {
 			const success = new Success(cloneTemplate(successTemplate), {
 				onClick: () => {
 					appData.clearOrder();
-					modal.close();
 					events.emit('basket: secondRender');
+					modal.close();
 				},
 			});
-
+			
 			modal.render({
 				content: success.render({
-					description: appData.getTotal().toString(),
-				}),
-			});
-		})
+				  description: appData.getTotal().toString(),
+				})
+			  })
+			  
+			}).then(() => { 
+				appData.clearOrder();
+				events.emit('basket: secondRender');
+			})
 		.catch((err) => {
 			console.error(err);
 		});
+		
 });
 
 events.on('orderDelivery:open', () => {
@@ -141,7 +146,7 @@ events.on('orderDeliveryForm:change', (errors: Partial<IDeliveryForm>) => {
 	orderDeliveryForm.valid = !payment && !address;
 	orderDeliveryForm.errors = Object.values({ payment, address })
 		.filter((err) => !!err)
-		.join(';');
+		.join('; ');
 });
 
 events.on(
@@ -214,12 +219,10 @@ events.on('preview:changed', (item: LotItem) => {
 			cloneTemplate(cardPreviewTemplate),
 			{
 				onClick: () => {
-					modal.close();
 					if (!item.status) {
 						events.emit('card: add', item);
 					}
 					modal.close();
-					events.emit('preview:changed', item);
 				},
 			}
 		);

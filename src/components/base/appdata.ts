@@ -39,6 +39,12 @@ class AppState extends Model<IAppState> {
       return acc + (item ? item.price : 0); 
     }, 0);
   }
+  getTotalFiltred() {
+    return this.order.items.reduce((acc, id) => {
+      const item = this.catalog.find((it) => it.id === id);
+      return acc + (item && item.price !== null ? item.price : 0); 
+    }, 0);
+  }
 
   setCatalog(items: ILotItem[]) {
     this.catalog = items.map((item) => new LotItem(item, this.events)); 
@@ -75,13 +81,22 @@ class AppState extends Model<IAppState> {
   }
 
   validateOrderContacts() {
-    const errors = {} as OrderErrors; 
+    const errors = {} as OrderErrors;
+
+    // Проверка номера телефона
     if (!this.order.phone) {
       errors.phone = 'Необходим номер телефона';
+    } else if (!/^\+?\d+$/.test(this.order.phone)) {
+      errors.phone = 'Введите номер телефона в формате +79123456789';
     }
+  
+    // Проверка email
     if (!this.order.email) {
       errors.email = 'Необходим email';
+    } else if (!/\S+@\S+\.\S+/.test(this.order.email)) {
+      errors.email = 'Введите корректный email адрес';
     }
+  
     this.orderErrors = errors;
     this.events.emit('orderContactsForm:change', this.orderErrors);
     return Object.keys(errors).length === 0;

@@ -103,7 +103,7 @@ class ProductPreviewCard<T> extends ProductCard<IProductPreview<T>> {
             case 'другое':
                 this._category.classList.add('card__category_other');
                 break;
-            case 'кнопк':
+            case 'кнопка':
                 this._category.classList.add('card__category_button');
                 break;
             case 'дополнительно':

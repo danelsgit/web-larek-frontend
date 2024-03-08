@@ -136,7 +136,7 @@ class Modal extends Component<IModalContent> {
 
 	private handleClick(event: Event) {
 		const target = event.target as HTMLElement;
-		if (target === this._closeButton) {
+		if (target === this._closeButton || this.container.contains(target) && !this._content.contains(target)) {
 			this.close();
 		} else if (target !== this._content) {
 			event.stopPropagation();
@@ -155,6 +155,7 @@ class Modal extends Component<IModalContent> {
 	close() {
 		this.container.classList.remove('modal_active');
 		this.events.emit('modal:close');
+		this.content = null
 	}
 
 	render(data: IModalContent): HTMLElement {
